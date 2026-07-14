@@ -95,12 +95,23 @@ let password=document.getElementById("password").value;
 firebase.auth()
 .createUserWithEmailAndPassword(email,password)
 
-.then(()=>{
+.then((userCredential)=>{
+
+let user = userCredential.user;
+
+firebase.database().ref("users/" + user.uid).set({
+
+    email: user.email,
+    createdAt: new Date().toISOString()
+
+});
+
 
 document.getElementById("status").innerHTML=
 "✅ Account ဖွင့်ပြီးပါပြီ";
 
 })
+    
 
 .catch(error=>{
 
