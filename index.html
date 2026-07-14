@@ -1,149 +1,377 @@
-<!DOCTYPE html>  
-<html lang="my">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Happy Platform V2</title>  
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>  
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>  
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>  
-    
-    <style>  
-        body{  
-            background:#0f172a;  
-            color:white;  
-            font-family:sans-serif;  
-            text-align:center;  
-            padding:20px;  
-        }  
-        
-        .box{  
-            max-width:400px;  
-            margin:auto;  
-            background:#1e293b;  
-            padding:20px;  
-            border-radius:15px;  
-        }  
-        
-        input, button{  
-            width:90%;  
-            padding:12px;  
-            margin:8px;  
-            border-radius:8px;  
-            border:none;  
-            box-sizing: border-box; /* input အပြင်မထွက်အောင် */
-        }  
-        
-        button{  
-            background:#10b981;  
-            color:white;  
-            font-weight:bold;  
-            cursor: pointer;
-        }  
-        
-        #status{  
-            color:#34d399;  
-            font-weight: bold;
-        }  
-    </style>  
-</head>  
-<body>  
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="box">  
-    <h1>🚀 Happy Platform V2</h1>  
-    <p id="status">Firebase ချိတ်ဆက်ရန် အသင့်</p>  
-    
-    <input id="username" type="text" placeholder="Username (နာမည်)">  
-    <input id="email" type="email" placeholder="Email">  
-    <input id="password" type="password" placeholder="Password">  
-    
-    <button onclick="registerUser()">အကောင့်ဖွင့်မည်</button>
-    <button onclick="loginUser()">Login ဝင်မည်</button>
-    <button onclick="logoutUser()">Logout ထွက်မည်</button>
-</div>  
+<title>Happy Platform V2</title>
 
-<script>  
-    // Firebase Configuration
-    const firebaseConfig = {  
-        apiKey: "AIzaSyCgamnl5ZozPJpPJ5hzbpgGeYm-hXdl8Ug",  
-        authDomain: "happy-platform-eb6c1.firebaseapp.com",  
-        databaseURL: "https://happy-platform-eb6c1-default-rtdb.firebaseio.com",  
-        projectId: "happy-platform-eb6c1",  
-        storageBucket: "happy-platform-eb6c1.firebasestorage.app",  
-        messagingSenderId: "989734830184",  
-        appId: "1:989734830184:web:69a30b6f84643c14303bdd"  
-    };  
-    
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);  
-      
-    // ၁။ Register လုပ်ပြီး Database ထဲ အချက်အလက်သိမ်းမည့် Function
-    function registerUser(){  
-        let username = document.getElementById("username").value.trim();  
-        let email = document.getElementById("email").value.trim();  
-        let password = document.getElementById("password").value;  
-      
-        if(username === "" || email === "" || password === "") {
-            alert("ကျေးဇူးပြု၍ အချက်အလက် အားလုံး ဖြည့်ပေးပါ။");
-            return;
-        }
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-        firebase.auth().createUserWithEmailAndPassword(email, password)  
-        .then((userCredential) => {  
-            let user = userCredential.user;  
-            
-            // Realtime Database ထဲသို့ Phase 2 ပုံစံအတိုင်း သိမ်းဆည်းခြင်း
-            firebase.database().ref("users/" + user.uid).set({  
-                email: user.email,  
-                username: username,  
-                bio: "Hello, I am new here!", // default bio
-                createdAt: new Date().toISOString()  
-            })
-            .then(() => {
-                document.getElementById("status").innerHTML = "✅ Account ဖွင့်ပြီး Profile သိမ်းဆည်းပြီးပါပြီ";  
-            });
-        })  
-        .catch(error => {  
-            alert(error.message);  
-        });  
-    }  
-      
-    // ၂။ Login ဝင်မည့် Function
-    function loginUser(){
-        let email = document.getElementById("email").value.trim();  
-        let password = document.getElementById("password").value;  
+<style>
 
-        firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            document.getElementById("status").innerHTML = "✅ Login ဝင်ရောက်ခြင်း အောင်မြင်ပါသည်";
-        })
-        .catch(error => {
-            alert(error.message);
-        });
-    }
+body{
+    background:#0f172a;
+    color:white;
+    font-family:sans-serif;
+    text-align:center;
+    padding:20px;
+}
 
-    // ၃။ Logout ထွက်မည့် Function
-    function logoutUser(){  
-        firebase.auth().signOut()
-        .then(() => {
-            document.getElementById("status").innerHTML = "👋 Logout ပြုလုပ်ပြီးပါပြီ";  
-        })
-        .catch(error => {
-            alert(error.message);
-        });
-    }  
-      
-    // ၄။ User Status ကို အမြဲစောင့်ကြည့်ပေးမည့် Function
-    firebase.auth().onAuthStateChanged(user => {  
-        if(user){  
-            // User ရှိနေရင် ဝင်ထားတဲ့ Email ပြမယ်
-            document.getElementById("status").innerHTML = "👤 ဝင်ထားသော User : " + user.email;  
-        } else {
-            document.getElementById("status").innerHTML = "🔒 ဝင်ရောက်ထားသော အကောင့်မရှိပါ";
-        } 
-    });  
-</script>  
+.box{
+    max-width:400px;
+    margin:auto;
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+}
 
-</body>  
+input,button{
+    width:90%;
+    padding:12px;
+    margin:8px;
+    border-radius:8px;
+    border:none;
+    box-sizing:border-box;
+}
+
+button{
+    background:#10b981;
+    color:white;
+    font-weight:bold;
+}
+
+#status{
+    color:#34d399;
+    font-weight:bold;
+}
+
+.password-box{
+    position:relative;
+}
+
+.eye{
+    position:absolute;
+    right:30px;
+    top:18px;
+    cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>🚀 Happy Platform V2</h1>
+
+<p id="status">
+Firebase ချိတ်ဆက်ရန် အသင့်
+</p>
+
+
+<input id="username" 
+type="text" 
+placeholder="Username (နာမည်)">
+
+
+<input id="email" 
+type="email" 
+placeholder="Email">
+
+
+<div class="password-box">
+
+<input id="password" 
+type="password" 
+placeholder="Password">
+
+
+<span class="eye" onclick="togglePassword()">
+👁️
+</span>
+
+</div>
+
+
+<button onclick="registerUser()">
+အကောင့်ဖွင့်မည်
+</button>
+
+
+<button onclick="loginUser()">
+Login ဝင်မည်
+</button>
+
+
+<button onclick="resetPassword()">
+Forgot Password
+</button>
+
+
+<button onclick="logoutUser()">
+Logout ထွက်မည်
+</button>
+
+
+</div>
+<script>
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCgamnl5ZozPJpPJ5hzbpgGeYm-hXdl8Ug",
+
+authDomain: "happy-platform-eb6c1.firebaseapp.com",
+
+databaseURL: "https://happy-platform-eb6c1-default-rtdb.firebaseio.com",
+
+projectId: "happy-platform-eb6c1",
+
+storageBucket: "happy-platform-eb6c1.firebasestorage.app",
+
+messagingSenderId: "989734830184",
+
+appId: "1:989734830184:web:69a30b6f84643c14303bdd"
+
+};
+
+
+firebase.initializeApp(firebaseConfig);
+
+
+
+/* Password 👁️ Show / Hide */
+
+function togglePassword(){
+
+let password = document.getElementById("password");
+
+
+if(password.type === "password"){
+
+password.type = "text";
+
+}else{
+
+password.type = "password";
+
+}
+
+}
+
+
+
+/* Register */
+
+function registerUser(){
+
+let username =
+document.getElementById("username").value.trim();
+
+let email =
+document.getElementById("email").value.trim();
+
+let password =
+document.getElementById("password").value;
+
+
+if(username==="" || email==="" || password===""){
+
+alert("အချက်အလက်အားလုံး ဖြည့်ပေးပါ");
+
+return;
+
+}
+
+
+firebase.auth()
+.createUserWithEmailAndPassword(email,password)
+
+.then((userCredential)=>{
+
+
+let user=userCredential.user;
+
+
+firebase.database()
+.ref("users/"+user.uid)
+.set({
+
+email:user.email,
+
+username:username,
+
+bio:"Hello, I am new here!",
+
+createdAt:new Date().toISOString()
+
+});
+
+
+document.getElementById("status").innerHTML=
+"✅ Account ဖွင့်ပြီးပါပြီ";
+
+
+})
+
+.catch(error=>{
+
+alert(error.message);
+
+});
+
+
+}
+
+
+
+
+
+/* Login */
+
+function loginUser(){
+
+
+let email =
+document.getElementById("email").value.trim();
+
+
+let password =
+document.getElementById("password").value;
+
+
+firebase.auth()
+.signInWithEmailAndPassword(email,password)
+
+
+.then(()=>{
+
+
+document.getElementById("status").innerHTML=
+"✅ Login အောင်မြင်ပါပြီ";
+
+
+})
+
+
+.catch(error=>{
+
+alert(error.message);
+
+});
+
+
+}
+
+
+
+
+
+
+/* Forgot Password */
+
+function resetPassword(){
+
+
+let email =
+document.getElementById("email").value.trim();
+
+
+if(email===""){
+
+alert("Email ထည့်ပေးပါ");
+
+return;
+
+}
+
+
+firebase.auth()
+.sendPasswordResetEmail(email)
+
+.then(()=>{
+
+
+alert("Password Reset Email ပို့ပြီးပါပြီ");
+
+
+})
+
+
+.catch(error=>{
+
+
+alert(error.message);
+
+
+});
+
+
+}
+
+
+
+
+
+
+/* Logout */
+
+function logoutUser(){
+
+
+firebase.auth().signOut()
+
+
+.then(()=>{
+
+
+document.getElementById("status").innerHTML=
+"👋 Logout ပြုလုပ်ပြီးပါပြီ";
+
+
+});
+
+
+}
+
+
+
+
+
+/* User Status */
+
+
+firebase.auth()
+.onAuthStateChanged(user=>{
+
+
+if(user){
+
+
+document.getElementById("status").innerHTML=
+
+"👤 ဝင်ထားသော User : "+user.email;
+
+
+}else{
+
+
+document.getElementById("status").innerHTML=
+
+"🔒 Login ဝင်ထားသော User မရှိပါ";
+
+
+}
+
+
+});
+
+</script>
+
+
+</body>
     </html>
