@@ -3,18 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Happy Platform V3</title>
+<title>Happy Platform V3 - Social Network</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <style>
-body{ background:#0f172a; color:white; font-family:sans-serif; text-align:center; padding:15px; margin:0; }
-.box{ max-width:400px; margin:auto; background:#1e293b; padding:20px; border-radius:15px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
-input,button{ width:90%; padding:12px; margin:8px; border-radius:8px; border:none; box-sizing:border-box; outline: none; }
+body{ background:#0f172a; color:white; font-family:sans-serif; text-align:center; padding:15px; margin:0; padding-bottom: 80px; }
+.box{ max-width:450px; margin:auto; background:#1e293b; padding:20px; border-radius:15px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
+input,button,textarea{ width:90%; padding:12px; margin:8px; border-radius:8px; border:none; box-sizing:border-box; outline: none; }
+textarea { height: 80px; resize: none; font-family: sans-serif; }
 button{ background:#10b981; color:white; font-weight:bold; cursor: pointer; }
 #status{ color:#34d399; font-weight:bold; }
+
+/* 📰 News Feed & Post System UI */
+.feed-container { display: none; margin-top: 20px; text-align: left; }
+.create-post-box { background: #334155; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+.post-card { background: #1e293b; border: 1px solid #475569; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+.post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.post-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.post-author { font-weight: bold; color: #60a5fa; }
+.post-time { font-size: 11px; color: #94a3b8; }
+.post-image { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 250px; object-fit: cover; }
+.post-actions { display: flex; gap: 15px; margin-top: 10px; border-top: 1px solid #334155; padding-top: 8px; }
+.action-btn { background: none; width: auto; padding: 5px 10px; margin: 0; font-size: 14px; color: #cbd5e1; }
+.action-btn:hover { color: #10b981; }
+
+/* 💬 Comments UI */
+.comment-section { background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
+.comment-item { border-bottom: 1px solid #1e293b; padding: 5px 0; }
+.comment-user { font-weight: bold; color: #f59e0b; }
+.comment-input-box { display: flex; margin-top: 8px; }
+.comment-input-box input { flex: 1; padding: 6px; margin: 0; border-radius: 4px 0 0 4px; color: black; }
+.comment-input-box button { width: auto; padding: 6px 12px; margin: 0; border-radius: 0 4px 4px 0; }
+
+/* Existing Component UIs */
 .profile{ display: none; margin-top:15px; padding:15px; background:#334155; border-radius:10px; }
 .profile-photo{ width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid #10b981; background:#fff; margin:10px auto; display:block; }
 .file-input{ display:none; }
@@ -23,12 +47,12 @@ button{ background:#10b981; color:white; font-weight:bold; cursor: pointer; }
 .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; font-size: 18px; user-select: none; }
 .menu-trigger { background: #4f46e5 !important; margin-top: 15px; }
 .menu-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: #1e293b; border-radius: 10px; }
-.menu-content.show { max-height: 800px; padding: 10px 0; border: 1px dashed #475569; margin-top: 10px; }
+.menu-content.show { max-height: 900px; padding: 10px 0; border: 1px dashed #475569; margin-top: 10px; }
 .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
 .id-card { background: linear-gradient(135deg, #1e3a8a, #3b82f6); width: 310px; padding: 20px; border-radius: 20px; border: 2px solid #60a5fa; text-align: center; }
 .id-photo { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #fff; object-fit: cover; margin-bottom: 10px; }
 .id-details { text-align: left; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; font-size: 13px; margin: 10px 0; line-height: 1.5; }
-.user-list-box { background: #334155; border-radius: 10px; padding: 10px; margin: 10px auto; width: 90%; text-align: left; }
+.user-list-box { background: #334155; border-radius: 10px; padding: 10px; margin: 10px auto; width: 95%; text-align: left; }
 .user-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid #475569; cursor: pointer; }
 .user-item:hover { background: #475569; border-radius: 5px; }
 .user-item-info { display: flex; align-items: center; gap: 8px; }
@@ -46,7 +70,7 @@ button{ background:#10b981; color:white; font-weight:bold; cursor: pointer; }
 .chat-input-area { display: flex; padding: 5px; background: #1e293b; border-radius: 0 0 15px 15px; }
 .chat-input-area input { flex: 1; padding: 10px; color: black; border-radius: 8px 0 0 8px; border: none; }
 .chat-input-area button { width: auto; background: #10b981; border-radius: 0 8px 8px 0; }
-.search-box { background: #334155; border-radius: 10px; padding: 10px; margin: 10px auto; width: 90%; }
+.search-box { background: #334155; border-radius: 10px; padding: 10px; margin: 10px auto; width: 95%; }
 .search-result { display: none; background: #1e293b; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px solid #10b981; text-align: left; }
 .search-photo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; display: block; margin: 5px 0; }
 </style>
@@ -54,62 +78,78 @@ button{ background:#10b981; color:white; font-weight:bold; cursor: pointer; }
 <body>
 
 <div class="box">
-    <h1>🚀 Happy Platform V3</h1>
-    <p id="status">အဆင်သင့်ဖြစ်ပါပြီ</p>
+<h1>🚀 Happy Platform V3</h1>
+<p id="status">အဆင်သင့်ဖြစ်ပါပြီ</p>
 
-    <div id="authFields">
-        <input id="username" type="text" placeholder="Username (နာမည်)">
-        <input id="email" type="email" placeholder="Email">
-        <div class="pass-container">
-            <input id="password" type="password" placeholder="Password">
-            <span id="eyeIcon" class="eye-btn" onclick="togglePasswordVisibility()">👁️</span>
+<div id="authFields">
+    <input id="username" type="text" placeholder="Username (နာမည်)">
+    <input id="email" type="email" placeholder="Email">
+    <div class="pass-container">
+        <input id="password" type="password" placeholder="Password">
+        <span id="eyeIcon" class="eye-btn" onclick="togglePasswordVisibility()">👁️</span>
+    </div>
+    <button onclick="registerUser()">အကောင့်ဖွင့်မည်</button>
+    <button onclick="loginUser()">Login ဝင်မည်</button>
+</div>
+
+<button id="logoutBtn" style="display: none; background: #ef4444;" onclick="logoutUser()">Logout ထွက်မည်</button>
+
+<div id="profileArea" class="profile">
+    <h2>👤 My Profile</h2>
+    <img id="profileImage" class="profile-photo" src="https://via.placeholder.com/120">
+    <input type="file" id="photoInput" class="file-input" accept="image/*">
+    <button style="background:#2563eb;" onclick="document.getElementById('photoInput').click()">📷 Profile Photo</button>
+    
+    <p id="profileName">Username: Loading...</p>
+    <p id="profileEmail">Email: -</p>
+    <p id="profileBio">Bio: -</p>
+    <input id="newBio" placeholder="Bio အသစ်ရေးပါ">
+    <button onclick="updateProfile()">Profile Update</button>
+</div>
+
+<div id="dashboard" style="display:none; margin-top:20px;">
+    <h2>🎉 Welcome, <span id="welcomeUser">User</span></h2>
+
+    <button class="menu-trigger" onclick="toggleMenu()">🛠️ Platform Menu ဖွင့်မည် ▾</button>
+
+    <div id="platformMenu" class="menu-content">
+        <button onclick="openSmartID()">🪪 Smart ID</button>
+        <button onclick="openGlobalChat()">💬 Live Global Chat</button>
+
+        <div class="user-list-box">
+            <h3>👥 အဖွဲ့ဝင်များ (Online Status)</h3>
+            <div id="usersOnlineList">Loading users...</div>
         </div>
-        <button onclick="registerUser()">အကောင့်ဖွင့်မည်</button>
-        <button onclick="loginUser()">Login ဝင်မည်</button>
-    </div>
 
-    <button id="logoutBtn" style="display: none; background: #ef4444;" onclick="logoutUser()">Logout ထွက်မည်</button>
-
-    <div id="profileArea" class="profile">
-        <h2>👤 My Profile</h2>
-        <img id="profileImage" class="profile-photo" src="https://via.placeholder.com/120">
-        <input type="file" id="photoInput" class="file-input" accept="image/*">
-        <button style="background:#2563eb;" onclick="document.getElementById('photoInput').click()">📷 Profile Photo</button>
-        
-        <p id="profileName">Username: Loading...</p>
-        <p id="profileEmail">Email: -</p>
-        <p id="profileBio">Bio: -</p>
-        <input id="newBio" placeholder="Bio အသစ်ရေးပါ">
-        <button onclick="updateProfile()">Profile Update</button>
-    </div>
-
-    <div id="dashboard" style="display:none; margin-top:20px;">
-        <h2>🎉 Welcome, <span id="welcomeUser">User</span></h2>
-        <button class="menu-trigger" onclick="toggleMenu()">🛠️ Platform Menu ဖွင့်မည် ▾</button>
-
-        <div id="platformMenu" class="menu-content">
-            <button onclick="openSmartID()">🪪 Smart ID</button>
-            <button onclick="openGlobalChat()">💬 Live Global Chat</button>
-
-            <div class="user-list-box">
-                <h3>👥 အဖွဲ့ဝင်များ (Online Status)</h3>
-                <div id="usersOnlineList">Loading users...</div>
-            </div>
-
-            <div class="search-box">
-                <h3>🔍 User ရှာဖွေရန်</h3>
-                <input id="searchUsername" type="text" placeholder="Username ရိုက်ပါ">
-                <button onclick="searchUser()">ရှာဖွေမည်</button>
-                <div id="searchResult" class="search-result">
-                    <img id="resPhoto" class="search-photo" src="https://via.placeholder.com/80">
-                    <h4 id="resName">-</h4>
-                    <p id="resEmail">-</p>
-                    <p id="resBio">-</p>
-                    <button id="searchChatBtn" style="background:#2563eb; width:100%;">💬 စကားပြောမည်</button>
-                </div>
+        <div class="search-box">
+            <h3>🔍 User ရှာဖွေရန်</h3>
+            <input id="searchUsername" type="text" placeholder="Username ရိုက်ပါ">
+            <button onclick="searchUser()">ရှာဖွေမည်</button>
+            <div id="searchResult" class="search-result">
+                <img id="resPhoto" class="search-photo" src="https://via.placeholder.com/80">
+                <h4 id="resName">-</h4>
+                <p id="resEmail">-</p>
+                <p id="resBio">-</p>
+                <button id="searchChatBtn" style="background:#2563eb; width:100%;">💬 စကားပြောမည်</button>
             </div>
         </div>
     </div>
+
+    <div id="newsFeed" class="feed-container">
+        <div class="create-post-box">
+            <h3>📝 တောင်းဆိုချက်အသစ်တင်ရန်</h3>
+            <textarea id="postText" placeholder="ယနေ့အတွက် ဘာတွေးနေလဲ..."></textarea>
+            
+            <input type="file" id="postPhotoInput" class="file-input" accept="image/*">
+            <button style="background:#4f46e5; width:45%; display:inline-block;" onclick="document.getElementById('postPhotoInput').click()">📷 ဓာတ်ပုံထည့်ရန်</button>
+            <button style="width:45%; display:inline-block;" onclick="createPost()">Post တင်မည် 🚀</button>
+            <img id="postImagePreview" style="display:none; width:100px; margin-top:10px; border-radius:5px;">
+        </div>
+
+        <h3>📰 သတင်းစာမျက်နှာ (News Feed)</h3>
+        <div id="feedPosts">Loading Posts...</div>
+    </div>
+</div>
 </div>
 
 <div id="idModal" class="modal">
@@ -136,10 +176,9 @@ button{ background:#10b981; color:white; font-weight:bold; cursor: pointer; }
         <input id="chatInput" placeholder="စာရိုက်ပါ...">
         <button onclick="sendMessage()">Send</button>
     </div>
-</div>
-
-<script>
-    const firebaseConfig = {
+    </div>
+    <script>
+  const firebaseConfig = {
     apiKey: "AIzaSyCgamnl5ZozPJpPJ5hzbpgGeYm-hXdl8Ug",
     authDomain: "happy-platform-eb6c1.firebaseapp.com",
     projectId: "happy-platform-eb6c1",
@@ -149,11 +188,13 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(); 
 
 let base64Image = ""; 
+let postBase64Image = "";
 let currentUserData = null;
 let currentChatMode = "global"; 
 let targetUserUid = null; 
 let chatUnsubscribe = null;
 let usersListUnsubscribe = null;
+let postsUnsubscribe = null;
 
 function togglePasswordVisibility() {
     let passInput = document.getElementById("password");
@@ -167,48 +208,57 @@ function toggleMenu() { document.getElementById("platformMenu").classList.toggle
 function clearAllInputs() {
     document.getElementById("username").value = ""; document.getElementById("email").value = "";
     document.getElementById("password").value = ""; document.getElementById("chatInput").value = "";
-    document.getElementById("password").type = "password"; document.getElementById("eyeIcon").innerHTML = "👁️";
 }
 
+// Profile Image Compressor
 document.getElementById("photoInput").addEventListener("change", function(e){
-    let file = e.target.files[0];
+    compressImage(e.target.files[0], function(base64) {
+        base64Image = base64; document.getElementById("profileImage").src = base64;
+    });
+});
+
+// Post Image Compressor
+document.getElementById("postPhotoInput").addEventListener("change", function(e){
+    compressImage(e.target.files[0], function(base64) {
+        postBase64Image = base64;
+        let preview = document.getElementById("postImagePreview");
+        preview.src = base64; preview.style.display = "block";
+    });
+});
+
+function compressImage(file, callback) {
     if(file){
         let reader = new FileReader();
         reader.onload = function(ev){
             let img = new Image();
             img.onload = function() {
                 let canvas = document.createElement('canvas'); let ctx = canvas.getContext('2d');
-                canvas.width = 300; canvas.height = 300; ctx.drawImage(img, 0, 0, 300, 300);
-                base64Image = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById("profileImage").src = base64Image;
+                canvas.width = 400; canvas.height = 400; ctx.drawImage(img, 0, 0, 400, 400);
+                callback(canvas.toDataURL('image/jpeg', 0.5));
             };
             img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
     }
-});
+}
 
+// Auth Systems
 function registerUser(){
     let username = document.getElementById("username").value.trim();
     let email = document.getElementById("email").value.trim();
     let password = document.getElementById("password").value;
     if(!username || !email || !password){ alert("အားလုံးဖြည့်ပါ"); return; }
-    
-    firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then(cred => {
+    firebase.auth().createUserWithEmailAndPassword(email, password).then(cred => {
         return db.collection("users").doc(cred.user.uid).set({
             email: email, username: username, bio: "Hello", photoURL: "", createdAt: new Date().toISOString(), status: "online"
         });
-    })
-    .then(() => { clearAllInputs(); })
-    .catch(err => alert(err.message));
+    }).then(() => clearAllInputs()).catch(err => alert(err.message));
 }
 
 function loginUser(){
     let email = document.getElementById("email").value.trim();
     let password = document.getElementById("password").value;
-    firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(cred => {
+    firebase.auth().signInWithEmailAndPassword(email, password).then(cred => {
         db.collection("users").doc(cred.user.uid).update({ status: "online" });
         clearAllInputs();
     }).catch(err => alert(err.message));
@@ -217,15 +267,14 @@ function loginUser(){
 function logoutUser(){
     let user = firebase.auth().currentUser;
     if(user) {
-        db.collection("users").doc(user.uid).update({ status: "offline" }).then(() => {
-            executeSignOut();
-        });
+        db.collection("users").doc(user.uid).update({ status: "offline" }).then(() => executeSignOut());
     } else { executeSignOut(); }
 }
 function executeSignOut() {
     if(chatUnsubscribe) chatUnsubscribe();
     if(usersListUnsubscribe) usersListUnsubscribe();
-    firebase.auth().signOut().then(() => { clearAllInputs(); window.location.reload(); });
+    if(postsUnsubscribe) postsUnsubscribe();
+    firebase.auth().signOut().then(() => window.location.reload());
 }
 
 function updateProfile(){
@@ -234,15 +283,14 @@ function updateProfile(){
     let updates = {};
     if(bio !== "") updates["bio"] = bio;
     if(base64Image !== "") updates["photoURL"] = base64Image;
-
     if(Object.keys(updates).length > 0) {
         db.collection("users").doc(user.uid).update(updates).then(() => {
-            document.getElementById("newBio").value = ""; base64Image = "";
-            alert("Profile ပြင်ဆင်ပြီးပါပြီ");
+            document.getElementById("newBio").value = ""; base64Image = ""; alert("Profile ပြင်ဆင်ပြီးပါပြီ");
         });
     }
 }
 
+// Monitor Auth
 firebase.auth().onAuthStateChanged(user => {
     if(user){
         document.getElementById("status").innerHTML = "👤 Active: " + user.email;
@@ -250,6 +298,7 @@ firebase.auth().onAuthStateChanged(user => {
         document.getElementById("profileArea").style.display = "block";
         document.getElementById("logoutBtn").style.display = "block";
         document.getElementById("dashboard").style.display = "block";
+        document.getElementById("newsFeed").style.display = "block";
         
         db.collection("users").doc(user.uid).onSnapshot(doc => {
             if(doc.exists){
@@ -261,45 +310,120 @@ firebase.auth().onAuthStateChanged(user => {
                 if(currentUserData.photoURL) document.getElementById("profileImage").src = currentUserData.photoURL;
             }
         });
-
-        listenUsersOnlineList(); 
-        openGlobalChat();
-    } else {
-        document.getElementById("authFields").style.display = "block";
-        document.getElementById("profileArea").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "none";
-        document.getElementById("dashboard").style.display = "none";
+        listenUsersOnlineList(); listenPosts(); openGlobalChat();
     }
 });
 
+// Online Members List
 function listenUsersOnlineList() {
     usersListUnsubscribe = db.collection("users").onSnapshot(snap => {
-        let listDiv = document.getElementById("usersOnlineList");
-        listDiv.innerHTML = "";
+        let listDiv = document.getElementById("usersOnlineList"); listDiv.innerHTML = "";
         snap.forEach(doc => {
-            let data = doc.data();
-            let uid = doc.id;
-            if(currentUserData && uid === currentUserData.uid) return; 
-
+            let data = doc.data(); let uid = doc.id;
+            if(currentUserData && uid === currentUserData.uid) return;
             let isOnline = data.status === "online";
-            let item = document.createElement("div");
-            item.className = "user-item";
+            let item = document.createElement("div"); item.className = "user-item";
             item.onclick = () => startPrivateChat(data.username, uid);
-
             item.innerHTML = `
-                <div class="user-item-info">
-                    <img class="user-item-photo" src="${data.photoURL || 'https://via.placeholder.com/40'}">
-                    <span>${data.username}</span>
-                </div>
-                <div class="status-dot ${isOnline ? 'status-online' : 'status-offline'}"></div>
-            `;
+                <div class="user-item-info"><img class="user-item-photo" src="${data.photoURL || 'https://via.placeholder.com/40'}"><span>${data.username}</span></div>
+                <div class="status-dot ${isOnline ? 'status-online' : 'status-offline'}"></div>`;
             listDiv.appendChild(item);
         });
     });
 }
 
+// 📰 Post စနစ်သစ် ကုဒ်များ
+function createPost() {
+    let text = document.getElementById("postText").value.trim();
+    if(!text && !postBase64Image) { alert("တစ်ခုခုရေးပါ သို့မဟုတ် ဓာတ်ပုံထည့်ပါ"); return; }
+    
+    alert("ပို့စ်တင်ရန် ကြိုးစားနေပါသည်..."); 
+
+    db.collection("posts").add({
+        authorName: currentUserData.username, 
+        authorUid: currentUserData.uid, 
+        authorPhoto: currentUserData.photoURL || "",
+        text: text, 
+        imageURL: postBase64Image, 
+        likes: [], 
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        alert("ပို့စ်တင်ပြီးပါပြီ! 🎉");
+        document.getElementById("postText").value = ""; 
+        postBase64Image = "";
+        let preview = document.getElementById("postImagePreview");
+        if(preview) preview.style.display = "none";
+    }).catch(error => {
+        alert("ပို့စ်တင်ရခြင်း မအောင်မြင်ပါ- " + error.message);
+    });
+}
+
+function listenPosts() {
+    postsUnsubscribe = db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snap => {
+        let feed = document.getElementById("feedPosts"); feed.innerHTML = "";
+        snap.forEach(doc => {
+            let post = doc.data(); let postId = doc.id;
+            let timeStr = post.timestamp ? new Date(post.timestamp.toDate()).toLocaleString() : "ခုနကတင်သည်";
+            let isLiked = post.likes && post.likes.includes(currentUserData.uid);
+            
+            let card = document.createElement("div"); card.className = "post-card";
+            card.innerHTML = `
+                <div class="post-header">
+                    <img class="post-avatar" src="${post.authorPhoto || 'https://via.placeholder.com/40'}">
+                    <div><div class="post-author">${post.authorName}</div><div class="post-time">${timeStr}</div></div>
+                </div>
+                <div>${post.text}</div>
+                ${post.imageURL ? `<img class="post-image" src="${post.imageURL}">` : ""}
+                <div class="post-actions">
+                    <button class="action-btn" onclick="likePost('${postId}')">${isLiked ? '❤️' : '🤍'} Like (${post.likes ? post.likes.length : 0})</button>
+                </div>
+                <div class="comment-section" id="comments-${postId}">Loading comments...</div>
+                <div class="comment-input-box">
+                    <input id="c-input-${postId}" placeholder="Comment ရေးရန်...">
+                    <button onclick="addComment('${postId}')">ပို့မည်</button>
+                </div>`;
+            feed.appendChild(card);
+            listenComments(postId);
+        });
+    });
+}
+
+function likePost(postId) {
+    let ref = db.collection("posts").doc(postId);
+    db.runTransaction(transaction => {
+        return transaction.get(ref).then(doc => {
+            let likes = doc.data().likes || [];
+            if(likes.includes(currentUserData.uid)) { likes = likes.filter(id => id !== currentUserData.uid); } 
+            else { likes.push(currentUserData.uid); }
+            transaction.update(ref, { likes: likes });
+        });
+    });
+}
+
+function addComment(postId) {
+    let input = document.getElementById(`c-input-${postId}`); let text = input.value.trim();
+    if(!text) return;
+    db.collection("posts").doc(postId).collection("comments").add({
+        authorName: currentUserData.username, text: text, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => input.value = "");
+}
+
+function listenComments(postId) {
+    db.collection("posts").doc(postId).collection("comments").orderBy("timestamp", "asc").onSnapshot(snap => {
+        let box = document.getElementById(`comments-${postId}`); box.innerHTML = "";
+        if(snap.empty) { box.style.display = "none"; return; }
+        box.style.display = "block";
+        snap.forEach(doc => {
+            let c = doc.data();
+            let div = document.createElement("div"); div.className = "comment-item";
+            div.innerHTML = `<span class="comment-user">${c.authorName}:</span> ${c.text}`;
+            box.appendChild(div);
+        });
+    });
+}
+
+// Smart ID & Search
 function openSmartID(){
-    if(!currentUserData) return;
     document.getElementById("idName").innerHTML = currentUserData.username;
     document.getElementById("idEmail").innerHTML = currentUserData.email;
     document.getElementById("idUid").innerHTML = currentUserData.uid;
@@ -310,8 +434,7 @@ function openSmartID(){
 function closeSmartID(){ document.getElementById("idModal").style.display = "none"; }
 
 function searchUser(){
-    let name = document.getElementById("searchUsername").value.trim();
-    if(!name) return;
+    let name = document.getElementById("searchUsername").value.trim(); if(!name) return;
     db.collection("users").where("username", "==", name).get().then(snap => {
         if(!snap.empty){
             let d = snap.docs[0].data(); let id = snap.docs[0].id;
@@ -325,65 +448,42 @@ function searchUser(){
     });
 }
 
+// Chat Box Systems
 function closeChatBox() { document.getElementById("chatBox").style.display = "none"; }
-
 function openGlobalChat() {
     currentChatMode = "global"; targetUserUid = null;
     document.getElementById("chatTitle").innerHTML = "🌐 Global Chat Room";
-    document.getElementById("chatBox").style.display = "flex";
-    listenMessages();
+    document.getElementById("chatBox").style.display = "flex"; listenMessages();
 }
-
 function startPrivateChat(targetName, targetUid) {
     currentChatMode = "private"; targetUserUid = targetUid;
     document.getElementById("chatTitle").innerHTML = `💬 Chat: ${targetName}`;
-    document.getElementById("chatBox").style.display = "flex";
-    listenMessages();
+    document.getElementById("chatBox").style.display = "flex"; listenMessages();
 }
-
 function sendMessage(){
-    let input = document.getElementById("chatInput"); let text = input.value.trim();
-    if(!text || !currentUserData) return;
-
-    let msgData = {
-        text: text, senderName: currentUserData.username, senderUid: currentUserData.uid,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
+    let input = document.getElementById("chatInput"); let text = input.value.trim(); if(!text) return;
+    let msgData = { text: text, senderName: currentUserData.username, senderUid: currentUserData.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
     if(currentChatMode === "global") {
-        db.collection("global_messages").add(msgData).then(() => { input.value = ""; });
+        db.collection("global_messages").add(msgData).then(() => input.value = "");
     } else {
         let roomID = currentUserData.uid < targetUserUid ? `${currentUserData.uid}_${targetUserUid}` : `${targetUserUid}_${currentUserData.uid}`;
-        db.collection("private_rooms").doc(roomID).collection("messages").add(msgData).then(() => { input.value = ""; });
+        db.collection("private_rooms").doc(roomID).collection("messages").add(msgData).then(() => input.value = "");
     }
 }
-
 function listenMessages(){
     if(chatUnsubscribe) chatUnsubscribe();
-    let msgsDiv = document.getElementById("chatMessages");
-    msgsDiv.innerHTML = "Loading...";
-
-    let query;
-    if(currentChatMode === "global") {
-        query = db.collection("global_messages").orderBy("timestamp", "asc").limitToLast(30);
-    } else {
-        let roomID = currentUserData.uid < targetUserUid ? `${currentUserData.uid}_${targetUserUid}` : `${targetUserUid}_${currentUserData.uid}`;
-        query = db.collection("private_rooms").doc(roomID).collection("messages").orderBy("timestamp", "asc").limitToLast(30);
-    }
-
+    let msgsDiv = document.getElementById("chatMessages"); msgsDiv.innerHTML = "Loading...";
+    let query = currentChatMode === "global" ? db.collection("global_messages").orderBy("timestamp", "asc").limitToLast(30) : db.collection("private_rooms").doc(currentUserData.uid < targetUserUid ? `${currentUserData.uid}_${targetUserUid}` : `${targetUserUid}_${currentUserData.uid}`).collection("messages").orderBy("timestamp", "asc").limitToLast(30);
     chatUnsubscribe = query.onSnapshot(snap => {
         msgsDiv.innerHTML = "";
         snap.forEach(doc => {
-            let d = doc.data(); if(!d.text) return;
-            let isMe = d.senderUid === currentUserData.uid;
-            let bubble = document.createElement("div");
-            bubble.className = "chat-bubble " + (isMe ? "user-msg" : "other-msg");
-            bubble.innerHTML = `<div class="sender-name">${isMe ? "ကျွန်ုပ်" : d.senderName}</div>` + d.text;
-            msgsDiv.appendChild(bubble);
+            let d = doc.data(); if(!d.text) return; let isMe = d.senderUid === currentUserData.uid;
+            let bubble = document.createElement("div"); bubble.className = "chat-bubble " + (isMe ? "user-msg" : "other-msg");
+            bubble.innerHTML = `<div class="sender-name">${isMe ? "ကျွန်ုပ်" : d.senderName}</div>` + d.text; msgsDiv.appendChild(bubble);
         });
         msgsDiv.scrollTop = msgsDiv.scrollHeight;
     });
 }
 </script>
 </body>
-</html>
+    </html>
