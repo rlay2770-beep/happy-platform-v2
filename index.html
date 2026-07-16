@@ -1,459 +1,389 @@
 <!DOCTYPE html>
 <html lang="my">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Happy Platform V2</title>
+<title>Happy Platform V3</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <style>
-
-body{
-
-background:#0f172a;
-color:white;
-font-family:sans-serif;
-text-align:center;
-padding:20px;
-
-}
-
-
-.box{
-
-max-width:400px;
-margin:auto;
-background:#1e293b;
-padding:20px;
-border-radius:15px;
-
-}
-
-
-input,button{
-
-width:90%;
-padding:12px;
-margin:8px;
-border-radius:8px;
-border:none;
-box-sizing:border-box;
-
-}
-
-
-button{
-
-background:#10b981;
-color:white;
-font-weight:bold;
-
-}
-
-
-#status{
-
-color:#34d399;
-font-weight:bold;
-
-}
-
-
-.profile{
-
-margin-top:20px;
-padding:15px;
-background:#334155;
-border-radius:10px;
-
-}
-
-
-.password-box{
-
-position:relative;
-
-}
-
-
-.eye{
-
-position:absolute;
-right:30px;
-top:18px;
-cursor:pointer;
-font-size:20px;
-
-}
-
-
+body{ background:#0f172a; color:white; font-family:sans-serif; text-align:center; padding:15px; margin:0; }
+.box{ max-width:400px; margin:auto; background:#1e293b; padding:20px; border-radius:15px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
+input,button{ width:90%; padding:12px; margin:8px; border-radius:8px; border:none; box-sizing:border-box; outline: none; }
+button{ background:#10b981; color:white; font-weight:bold; cursor: pointer; }
+#status{ color:#34d399; font-weight:bold; }
+.profile{ display: none; margin-top:15px; padding:15px; background:#334155; border-radius:10px; }
+.profile-photo{ width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid #10b981; background:#fff; margin:10px auto; display:block; }
+.file-input{ display:none; }
+.pass-container { position: relative; width: 90%; margin: 8px auto; text-align: left; }
+.pass-container input { width: 100%; margin: 0; padding-right: 45px; }
+.eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; font-size: 18px; user-select: none; }
+.menu-trigger { background: #4f46e5 !important; margin-top: 15px; }
+.menu-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: #1e293b; border-radius: 10px; }
+.menu-content.show { max-height: 800px; padding: 10px 0; border: 1px dashed #475569; margin-top: 10px; }
+.modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+.id-card { background: linear-gradient(135deg, #1e3a8a, #3b82f6); width: 310px; padding: 20px; border-radius: 20px; border: 2px solid #60a5fa; text-align: center; }
+.id-photo { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #fff; object-fit: cover; margin-bottom: 10px; }
+.id-details { text-align: left; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; font-size: 13px; margin: 10px 0; line-height: 1.5; }
+.user-list-box { background: #334155; border-radius: 10px; padding: 10px; margin: 10px auto; width: 90%; text-align: left; }
+.user-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid #475569; cursor: pointer; }
+.user-item:hover { background: #475569; border-radius: 5px; }
+.user-item-info { display: flex; align-items: center; gap: 8px; }
+.user-item-photo { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; }
+.status-online { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+.status-offline { background: #ef4444; }
+.chat-container { display: none; position: fixed; bottom: 10px; right: 10px; width: 320px; height: 420px; background: #1e293b; border-radius: 15px; border: 1px solid #475569; flex-direction: column; z-index: 90; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+.chat-header { background: #1e3a8a; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; border-radius: 15px 15px 0 0; align-items: center; }
+.chat-messages { flex: 1; padding: 10px; overflow-y: auto; text-align: left; font-size: 13px; display: flex; flex-direction: column; gap: 8px; background: #0f172a; }
+.chat-bubble { padding: 8px 12px; border-radius: 10px; max-width: 80%; line-height: 1.4; color: white; word-break: break-all; }
+.sender-name { font-size: 10px; color: #94a3b8; margin-bottom: 2px; font-weight: bold; }
+.user-msg { background: #2563eb; align-self: flex-end; border-radius: 12px 12px 0 12px; }
+.other-msg { background: #334155; align-self: flex-start; border-radius: 12px 12px 12px 0; }
+.chat-input-area { display: flex; padding: 5px; background: #1e293b; border-radius: 0 0 15px 15px; }
+.chat-input-area input { flex: 1; padding: 10px; color: black; border-radius: 8px 0 0 8px; border: none; }
+.chat-input-area button { width: auto; background: #10b981; border-radius: 0 8px 8px 0; }
+.search-box { background: #334155; border-radius: 10px; padding: 10px; margin: 10px auto; width: 90%; }
+.search-result { display: none; background: #1e293b; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px solid #10b981; text-align: left; }
+.search-photo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; display: block; margin: 5px 0; }
 </style>
-
 </head>
-
-
 <body>
 
-
 <div class="box">
+    <h1>🚀 Happy Platform V3</h1>
+    <p id="status">အဆင်သင့်ဖြစ်ပါပြီ</p>
 
+    <div id="authFields">
+        <input id="username" type="text" placeholder="Username (နာမည်)">
+        <input id="email" type="email" placeholder="Email">
+        <div class="pass-container">
+            <input id="password" type="password" placeholder="Password">
+            <span id="eyeIcon" class="eye-btn" onclick="togglePasswordVisibility()">👁️</span>
+        </div>
+        <button onclick="registerUser()">အကောင့်ဖွင့်မည်</button>
+        <button onclick="loginUser()">Login ဝင်မည်</button>
+    </div>
 
-<h1>🚀 Happy Platform V2</h1>
+    <button id="logoutBtn" style="display: none; background: #ef4444;" onclick="logoutUser()">Logout ထွက်မည်</button>
 
+    <div id="profileArea" class="profile">
+        <h2>👤 My Profile</h2>
+        <img id="profileImage" class="profile-photo" src="https://via.placeholder.com/120">
+        <input type="file" id="photoInput" class="file-input" accept="image/*">
+        <button style="background:#2563eb;" onclick="document.getElementById('photoInput').click()">📷 Profile Photo</button>
+        
+        <p id="profileName">Username: Loading...</p>
+        <p id="profileEmail">Email: -</p>
+        <p id="profileBio">Bio: -</p>
+        <input id="newBio" placeholder="Bio အသစ်ရေးပါ">
+        <button onclick="updateProfile()">Profile Update</button>
+    </div>
 
-<p id="status">
-Firebase ချိတ်ဆက်ရန် အသင့်
-</p>
+    <div id="dashboard" style="display:none; margin-top:20px;">
+        <h2>🎉 Welcome, <span id="welcomeUser">User</span></h2>
+        <button class="menu-trigger" onclick="toggleMenu()">🛠️ Platform Menu ဖွင့်မည် ▾</button>
 
+        <div id="platformMenu" class="menu-content">
+            <button onclick="openSmartID()">🪪 Smart ID</button>
+            <button onclick="openGlobalChat()">💬 Live Global Chat</button>
 
+            <div class="user-list-box">
+                <h3>👥 အဖွဲ့ဝင်များ (Online Status)</h3>
+                <div id="usersOnlineList">Loading users...</div>
+            </div>
 
-<input id="username"
-type="text"
-placeholder="Username (နာမည်)">
-
-
-
-<input id="email"
-type="email"
-placeholder="Email">
-
-
-
-<div class="password-box">
-
-<input id="password"
-type="password"
-placeholder="Password">
-
-
-<span class="eye" onclick="togglePassword()">
-👁️
-</span>
-
+            <div class="search-box">
+                <h3>🔍 User ရှာဖွေရန်</h3>
+                <input id="searchUsername" type="text" placeholder="Username ရိုက်ပါ">
+                <button onclick="searchUser()">ရှာဖွေမည်</button>
+                <div id="searchResult" class="search-result">
+                    <img id="resPhoto" class="search-photo" src="https://via.placeholder.com/80">
+                    <h4 id="resName">-</h4>
+                    <p id="resEmail">-</p>
+                    <p id="resBio">-</p>
+                    <button id="searchChatBtn" style="background:#2563eb; width:100%;">💬 စကားပြောမည်</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-
-
-<button onclick="registerUser()">
-အကောင့်ဖွင့်မည်
-</button>
-
-
-<button onclick="loginUser()">
-Login ဝင်မည်
-</button>
-
-
-<button onclick="resetPassword()">
-Forgot Password
-</button>
-
-
-<button onclick="logoutUser()">
-Logout ထွက်မည်
-</button>
-
-
-
-
-<div class="profile">
-
-
-<h2>👤 My Profile</h2>
-
-
-<p id="profileName">
-Username : -
-</p>
-
-
-<p id="profileBio">
-Bio : -
-</p>
-
-
-
-<input id="newBio"
-placeholder="Bio အသစ်ရေးပါ">
-
-
-<button onclick="updateProfile()">
-Profile Update
-</button>
-
-
+<div id="idModal" class="modal">
+    <div class="id-card">
+        <div style="font-weight: bold; font-size: 13px; margin-bottom: 10px; color:#93c5fd;">HAPPY PLATFORM ID CARD</div>
+        <img id="idPhoto" class="id-photo" src="https://via.placeholder.com/100">
+        <div id="idName" style="font-size: 20px; font-weight: bold; margin: 5px 0; color: #fff;">NAME</div>
+        <div class="id-details">
+            <p><strong>📧 Email:</strong> <span id="idEmail">-</span></p>
+            <p><strong>📅 Joined Date:</strong> <span id="idJoined">-</span></p>
+            <p><strong>🆔 ID Code:</strong> <span id="idUid" style="font-size: 10px; color:#cbd5e1;">-</span></p>
+        </div>
+        <button style="background:#ef4444; width: auto; padding: 8px 20px;" onclick="closeSmartID()">Close ပိတ်မည်</button>
+    </div>
 </div>
 
-
-
+<div id="chatBox" class="chat-container">
+    <div class="chat-header">
+        <span id="chatTitle">Global Chat Room</span>
+        <span style="cursor:pointer; font-size: 20px;" onclick="closeChatBox()">×</span>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input id="chatInput" placeholder="စာရိုက်ပါ...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
 </div>
+
 <script>
-
-const firebaseConfig = {
-
-apiKey: "AIzaSyCgamnl5ZozPJpPJ5hzbpgGeYm-hXdl8Ug",
-
-authDomain: "happy-platform-eb6c1.firebaseapp.com",
-
-databaseURL: "https://happy-platform-eb6c1-default-rtdb.firebaseio.com",
-
-projectId: "happy-platform-eb6c1",
-
-storageBucket: "happy-platform-eb6c1.firebasestorage.app",
-
-messagingSenderId: "989734830184",
-
-appId: "1:989734830184:web:69a30b6f84643c14303bdd"
-
+    const firebaseConfig = {
+    apiKey: "AIzaSyCgamnl5ZozPJpPJ5hzbpgGeYm-hXdl8Ug",
+    authDomain: "happy-platform-eb6c1.firebaseapp.com",
+    projectId: "happy-platform-eb6c1",
+    appId: "1:989734830184:web:69a30b6f84643c14303bdd"
 };
-
-
 firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(); 
 
+let base64Image = ""; 
+let currentUserData = null;
+let currentChatMode = "global"; 
+let targetUserUid = null; 
+let chatUnsubscribe = null;
+let usersListUnsubscribe = null;
 
-
-// Password Show / Hide
-
-function togglePassword(){
-
-let password = document.getElementById("password");
-
-if(password.type === "password"){
-
-password.type="text";
-
-}else{
-
-password.type="password";
-
+function togglePasswordVisibility() {
+    let passInput = document.getElementById("password");
+    let eyeIcon = document.getElementById("eyeIcon");
+    if (passInput.type === "password") { passInput.type = "text"; eyeIcon.innerHTML = "🙈"; } 
+    else { passInput.type = "password"; eyeIcon.innerHTML = "👁️"; }
 }
 
+function toggleMenu() { document.getElementById("platformMenu").classList.toggle("show"); }
+
+function clearAllInputs() {
+    document.getElementById("username").value = ""; document.getElementById("email").value = "";
+    document.getElementById("password").value = ""; document.getElementById("chatInput").value = "";
+    document.getElementById("password").type = "password"; document.getElementById("eyeIcon").innerHTML = "👁️";
 }
 
-
-
-// Register
+document.getElementById("photoInput").addEventListener("change", function(e){
+    let file = e.target.files[0];
+    if(file){
+        let reader = new FileReader();
+        reader.onload = function(ev){
+            let img = new Image();
+            img.onload = function() {
+                let canvas = document.createElement('canvas'); let ctx = canvas.getContext('2d');
+                canvas.width = 300; canvas.height = 300; ctx.drawImage(img, 0, 0, 300, 300);
+                base64Image = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById("profileImage").src = base64Image;
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
 function registerUser(){
-
-let username=document.getElementById("username").value.trim();
-
-let email=document.getElementById("email").value.trim();
-
-let password=document.getElementById("password").value;
-
-
-if(username==="" || email==="" || password===""){
-
-alert("အချက်အလက်အားလုံး ဖြည့်ပေးပါ");
-
-return;
-
+    let username = document.getElementById("username").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let password = document.getElementById("password").value;
+    if(!username || !email || !password){ alert("အားလုံးဖြည့်ပါ"); return; }
+    
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(cred => {
+        return db.collection("users").doc(cred.user.uid).set({
+            email: email, username: username, bio: "Hello", photoURL: "", createdAt: new Date().toISOString(), status: "online"
+        });
+    })
+    .then(() => { clearAllInputs(); })
+    .catch(err => alert(err.message));
 }
-
-
-firebase.auth()
-.createUserWithEmailAndPassword(email,password)
-
-.then((userCredential)=>{
-
-
-let user=userCredential.user;
-
-
-firebase.database()
-.ref("users/"+user.uid)
-.set({
-
-email:user.email,
-
-username:username,
-
-bio:"Hello",
-
-createdAt:new Date().toISOString()
-
-});
-
-
-document.getElementById("status").innerHTML=
-"✅ Account ဖွင့်ပြီးပါပြီ";
-
-
-})
-
-
-.catch(error=>{
-
-alert(error.message);
-
-});
-
-
-}
-
-
-
-
-// Login
 
 function loginUser(){
-
-let email=document.getElementById("email").value;
-
-let password=document.getElementById("password").value;
-
-
-firebase.auth()
-.signInWithEmailAndPassword(email,password)
-
-.catch(error=>{
-
-alert(error.message);
-
-});
-
-
+    let email = document.getElementById("email").value.trim();
+    let password = document.getElementById("password").value;
+    firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(cred => {
+        db.collection("users").doc(cred.user.uid).update({ status: "online" });
+        clearAllInputs();
+    }).catch(err => alert(err.message));
 }
-
-
-
-
-// Forgot Password
-
-function resetPassword(){
-
-let email=document.getElementById("email").value;
-
-
-firebase.auth()
-.sendPasswordResetEmail(email)
-
-.then(()=>{
-
-alert("Password Reset Email ပို့ပြီးပါပြီ");
-
-})
-
-.catch(error=>{
-
-alert(error.message);
-
-});
-
-
-}
-
-
-
-
-
-// Logout
 
 function logoutUser(){
-
-firebase.auth().signOut();
-
+    let user = firebase.auth().currentUser;
+    if(user) {
+        db.collection("users").doc(user.uid).update({ status: "offline" }).then(() => {
+            executeSignOut();
+        });
+    } else { executeSignOut(); }
 }
-
-
-
-
-
-// Profile Update
+function executeSignOut() {
+    if(chatUnsubscribe) chatUnsubscribe();
+    if(usersListUnsubscribe) usersListUnsubscribe();
+    firebase.auth().signOut().then(() => { clearAllInputs(); window.location.reload(); });
+}
 
 function updateProfile(){
+    let user = firebase.auth().currentUser; if(!user) return;
+    let bio = document.getElementById("newBio").value.trim();
+    let updates = {};
+    if(bio !== "") updates["bio"] = bio;
+    if(base64Image !== "") updates["photoURL"] = base64Image;
 
-let user=firebase.auth().currentUser;
+    if(Object.keys(updates).length > 0) {
+        db.collection("users").doc(user.uid).update(updates).then(() => {
+            document.getElementById("newBio").value = ""; base64Image = "";
+            alert("Profile ပြင်ဆင်ပြီးပါပြီ");
+        });
+    }
+}
 
+firebase.auth().onAuthStateChanged(user => {
+    if(user){
+        document.getElementById("status").innerHTML = "👤 Active: " + user.email;
+        document.getElementById("authFields").style.display = "none";
+        document.getElementById("profileArea").style.display = "block";
+        document.getElementById("logoutBtn").style.display = "block";
+        document.getElementById("dashboard").style.display = "block";
+        
+        db.collection("users").doc(user.uid).onSnapshot(doc => {
+            if(doc.exists){
+                currentUserData = doc.data(); currentUserData.uid = user.uid;
+                document.getElementById("profileName").innerHTML = "Username : " + currentUserData.username;
+                document.getElementById("profileEmail").innerHTML = "Email : " + currentUserData.email;
+                document.getElementById("profileBio").innerHTML = "Bio : " + currentUserData.bio;
+                document.getElementById("welcomeUser").innerHTML = currentUserData.username;
+                if(currentUserData.photoURL) document.getElementById("profileImage").src = currentUserData.photoURL;
+            }
+        });
 
-if(user){
-
-let bio=document.getElementById("newBio").value;
-
-
-firebase.database()
-.ref("users/"+user.uid)
-.update({
-
-bio:bio
-
+        listenUsersOnlineList(); 
+        openGlobalChat();
+    } else {
+        document.getElementById("authFields").style.display = "block";
+        document.getElementById("profileArea").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "none";
+        document.getElementById("dashboard").style.display = "none";
+    }
 });
 
+function listenUsersOnlineList() {
+    usersListUnsubscribe = db.collection("users").onSnapshot(snap => {
+        let listDiv = document.getElementById("usersOnlineList");
+        listDiv.innerHTML = "";
+        snap.forEach(doc => {
+            let data = doc.data();
+            let uid = doc.id;
+            if(currentUserData && uid === currentUserData.uid) return; 
 
-document.getElementById("profileBio").innerHTML=
-"Bio : "+bio;
+            let isOnline = data.status === "online";
+            let item = document.createElement("div");
+            item.className = "user-item";
+            item.onclick = () => startPrivateChat(data.username, uid);
 
-
+            item.innerHTML = `
+                <div class="user-item-info">
+                    <img class="user-item-photo" src="${data.photoURL || 'https://via.placeholder.com/40'}">
+                    <span>${data.username}</span>
+                </div>
+                <div class="status-dot ${isOnline ? 'status-online' : 'status-offline'}"></div>
+            `;
+            listDiv.appendChild(item);
+        });
+    });
 }
 
+function openSmartID(){
+    if(!currentUserData) return;
+    document.getElementById("idName").innerHTML = currentUserData.username;
+    document.getElementById("idEmail").innerHTML = currentUserData.email;
+    document.getElementById("idUid").innerHTML = currentUserData.uid;
+    document.getElementById("idJoined").innerHTML = currentUserData.createdAt ? new Date(currentUserData.createdAt).toLocaleDateString() : "-";
+    document.getElementById("idPhoto").src = currentUserData.photoURL || "https://via.placeholder.com/100";
+    document.getElementById("idModal").style.display = "flex";
+}
+function closeSmartID(){ document.getElementById("idModal").style.display = "none"; }
+
+function searchUser(){
+    let name = document.getElementById("searchUsername").value.trim();
+    if(!name) return;
+    db.collection("users").where("username", "==", name).get().then(snap => {
+        if(!snap.empty){
+            let d = snap.docs[0].data(); let id = snap.docs[0].id;
+            document.getElementById("resPhoto").src = d.photoURL || "https://via.placeholder.com/80";
+            document.getElementById("resName").innerHTML = "Name: " + d.username;
+            document.getElementById("resEmail").innerHTML = "Email: " + d.email;
+            document.getElementById("resBio").innerHTML = "Bio: " + d.bio;
+            document.getElementById("searchResult").style.display = "block";
+            document.getElementById("searchChatBtn").onclick = () => startPrivateChat(d.username, id);
+        } else { alert("ရှာမတွေ့ပါ"); }
+    });
 }
 
+function closeChatBox() { document.getElementById("chatBox").style.display = "none"; }
 
-
-
-
-// User Check
-
-firebase.auth()
-.onAuthStateChanged(user=>{
-
-
-if(user){
-
-
-document.getElementById("status").innerHTML=
-"👤 ဝင်ထားသော User : "+user.email;
-
-
-
-firebase.database()
-.ref("users/"+user.uid)
-.once("value")
-.then(snapshot=>{
-
-
-let data=snapshot.val();
-
-
-if(data){
-
-
-document.getElementById("profileName").innerHTML=
-"Username : "+data.username;
-
-
-document.getElementById("profileBio").innerHTML=
-"Bio : "+data.bio;
-
-
+function openGlobalChat() {
+    currentChatMode = "global"; targetUserUid = null;
+    document.getElementById("chatTitle").innerHTML = "🌐 Global Chat Room";
+    document.getElementById("chatBox").style.display = "flex";
+    listenMessages();
 }
 
-
-});
-
-
-}else{
-
-
-document.getElementById("status").innerHTML=
-"🔒 Login ဝင်ထားသော User မရှိပါ";
-
-
+function startPrivateChat(targetName, targetUid) {
+    currentChatMode = "private"; targetUserUid = targetUid;
+    document.getElementById("chatTitle").innerHTML = `💬 Chat: ${targetName}`;
+    document.getElementById("chatBox").style.display = "flex";
+    listenMessages();
 }
 
+function sendMessage(){
+    let input = document.getElementById("chatInput"); let text = input.value.trim();
+    if(!text || !currentUserData) return;
 
+    let msgData = {
+        text: text, senderName: currentUserData.username, senderUid: currentUserData.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-});
+    if(currentChatMode === "global") {
+        db.collection("global_messages").add(msgData).then(() => { input.value = ""; });
+    } else {
+        let roomID = currentUserData.uid < targetUserUid ? `${currentUserData.uid}_${targetUserUid}` : `${targetUserUid}_${currentUserData.uid}`;
+        db.collection("private_rooms").doc(roomID).collection("messages").add(msgData).then(() => { input.value = ""; });
+    }
+}
 
+function listenMessages(){
+    if(chatUnsubscribe) chatUnsubscribe();
+    let msgsDiv = document.getElementById("chatMessages");
+    msgsDiv.innerHTML = "Loading...";
+
+    let query;
+    if(currentChatMode === "global") {
+        query = db.collection("global_messages").orderBy("timestamp", "asc").limitToLast(30);
+    } else {
+        let roomID = currentUserData.uid < targetUserUid ? `${currentUserData.uid}_${targetUserUid}` : `${targetUserUid}_${currentUserData.uid}`;
+        query = db.collection("private_rooms").doc(roomID).collection("messages").orderBy("timestamp", "asc").limitToLast(30);
+    }
+
+    chatUnsubscribe = query.onSnapshot(snap => {
+        msgsDiv.innerHTML = "";
+        snap.forEach(doc => {
+            let d = doc.data(); if(!d.text) return;
+            let isMe = d.senderUid === currentUserData.uid;
+            let bubble = document.createElement("div");
+            bubble.className = "chat-bubble " + (isMe ? "user-msg" : "other-msg");
+            bubble.innerHTML = `<div class="sender-name">${isMe ? "ကျွန်ုပ်" : d.senderName}</div>` + d.text;
+            msgsDiv.appendChild(bubble);
+        });
+        msgsDiv.scrollTop = msgsDiv.scrollHeight;
+    });
+}
 </script>
-
-
 </body>
-    </html>
+</html>
